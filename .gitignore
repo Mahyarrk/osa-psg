@@ -4,3 +4,5 @@ data_raw.xlsx
 *.docx
 .venv/
 __pycache__/
+data_clean.csv
+data_included.csv
