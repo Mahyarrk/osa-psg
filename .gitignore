@@ -1,0 +1,6 @@
+data_raw.xlsx
+*.pdf
+*.doc
+*.docx
+.venv/
+__pycache__/
