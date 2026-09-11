@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from osa-psg!")
+"""osa-psg: sleep-medicine thesis reanalysis pipeline."""
