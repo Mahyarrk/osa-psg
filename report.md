@@ -1,11 +1,13 @@
 # Reanalysis of an OSA Thesis Dataset: A Reproducibility Audit
 
-**Project:** `osa-psg` — Python/pandas reanalysis of a 2022 sleep-medicine MD thesis
+**Project:** `osa-psg` — Python/pandas reanalysis of a 2023 sleep-medicine MD thesis
 **Cohort:** 55 adult PSG reports (OSA + PLMD referrals, Qazvin, 1395–1400); thesis cohort 42 (32 M / 10 F); full modeling cohort 55
-**Author:** Dr. Mahyar Mirzazadeh (thesis co-author). AI tooling was used
-for code drafting and SPSS-output forensics; all scientific decisions —
-column identification, exclusion criteria, statistical interpretation,
-modeling strategy — were made and verified by the author.
+**Author:** Dr Mahyar Mirzazadeh, M.D. — thesis author (defended 2023).
+SPSS statistical analyses were performed by the thesis supervisor,
+Dr. Soleymannejad. AI tooling was used for code drafting and SPSS-output
+forensics; all scientific decisions in this reanalysis — column
+identification, exclusion criteria, statistical interpretation, modeling
+strategy — were made and verified by the author.
 
 ---
 
