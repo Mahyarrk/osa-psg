@@ -64,7 +64,7 @@ def load_clean(path: str = RAW_FILE) -> pd.DataFrame:
     df["excluded"] = False
     df["exclusion_reason"] = ""
     for fragment, reason in EXCLUSIONS.items():
-        mask = df["patient_name"].str.contains(fragment, case=False, na=False)
+        mask = df["patient_name"].str.contains(fragment, case=False, na=False, regex=False)
         df.loc[mask, ["excluded", "exclusion_reason"]] = [True, reason]
 
     # sex as a readable category (keep the code too, thesis uses 1/2)

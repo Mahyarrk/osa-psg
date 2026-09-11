@@ -1,8 +1,10 @@
 data_raw.xlsx
+data_clean.csv
+data_included.csv
 *.pdf
 *.doc
 *.docx
+*.sav
+*.spv
 .venv/
 __pycache__/
-data_clean.csv
-data_included.csv
