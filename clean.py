@@ -22,15 +22,9 @@ CLEAN_ALL = "data_clean.csv"
 CLEAN_INCLUDED = "data_included.csv"
 
 # ---------------------------------------------------------------
-# Exclusion list (13 patients).
-# Sources:
-#   - final_impression labels  (5 nl, 4 upper, 1 primary snoring)
-#   - referral_reason text     (2 narcolepsy, 1 convulsion)
-#   - statistical identification (1 parasomnia: Asghar Chegini —
-#     the only candidate whose removal reproduces thesis Tables 1+2
-#     exactly: age 45.13±9.387, BMI 30.09±4.83, and Table 3 counts)
-# How to use: each entry is a name fragment -> reason. Matching is
-# case-insensitive on purpose (names are inconsistently typed).
+# Exclusion list (13 patients): labeled in final_impression,
+# referral_reason text (narcolepsy, convulsion), or identified
+# statistically (Chegini/parasomnia — see git history).
 # ---------------------------------------------------------------
 EXCLUSIONS = {
     # labeled in final_impression
@@ -63,11 +57,12 @@ def load_clean(path: str = RAW_FILE) -> pd.DataFrame:
     # exclusion flag + reason
     df["excluded"] = False
     df["exclusion_reason"] = ""
+    # match names case-insensitively; regex=False for literal matching
     for fragment, reason in EXCLUSIONS.items():
         mask = df["patient_name"].str.contains(fragment, case=False, na=False, regex=False)
         df.loc[mask, ["excluded", "exclusion_reason"]] = [True, reason]
 
-    # sex as a readable category (keep the code too, thesis uses 1/2)
+    # sex as readable label (numeric code kept for thesis parity)
     df["sex_label"] = df["sex"].map({1: "male", 2: "female"})
 
     return df
