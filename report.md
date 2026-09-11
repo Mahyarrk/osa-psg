@@ -1,9 +1,11 @@
 # Reanalysis of an OSA Thesis Dataset: A Reproducibility Audit
 
 **Project:** `osa-psg` — Python/pandas reanalysis of a 2022 sleep-medicine MD thesis
-**Cohort:** 55 adult PSG reports (OSA + PLMD referrals, Qazvin, 1395–1400), 42 included (32 M / 10 F)
-**Author of this audit:** Dr. Mahyar Mirzazadeh (thesis co-author), with a Python agent
-**Status:** week 1 of a 30-day reanalysis sprint
+**Cohort:** 55 adult PSG reports (OSA + PLMD referrals, Qazvin, 1395–1400); thesis cohort 42 (32 M / 10 F); full modeling cohort 55
+**Author:** Dr. Mahyar Mirzazadeh (thesis co-author). AI tooling was used
+for code drafting and SPSS-output forensics; all scientific decisions —
+column identification, exclusion criteria, statistical interpretation,
+modeling strategy — were made and verified by the author.
 
 ---
 
@@ -108,7 +110,24 @@ re-examination in a larger sample.
 
 Both are flagged as open items rather than resolved.
 
-## 5. Limitations of this reanalysis
+## 5. Total AHI: derivation
+
+The dataset stores stage-specific rates (REM AHI, non-REM AHI), not a total.
+These cannot be summed (rates with different denominators). The AASM
+definition — total apneas + hypopneas per hour of sleep — was applied to the
+raw event counts:
+
+    ahi_true_total = (all apnea and hypopnea counts) / (total sleep time in hours)
+
+Two independent validations: (1) a weighted-average reconstruction from the
+stage AHIs (using the cohort's REM share) predicts 53.7 vs the
+count-derived 54.05; (2) the derived quantity correlates with ODI at
+r = 0.58–0.64, within the expected range. The thesis's own "AHI total"
+variable cannot be uniquely reconstructed from archived outputs (see §4.2);
+its correlations reproduce under either construction. The severity target
+for the modeling phase (§7) uses the AASM-derived value.
+
+## 6. Limitations of this reanalysis
 
 1. **Sleep-stage percentages** (thesis Tables 12 and 14: N1/N2/N3/REM
    proportions) are not present in the spreadsheet or the archived SPSS
@@ -122,7 +141,66 @@ Both are flagged as open items rather than resolved.
 4. Dataset is small (n = 42); all conclusions carry the corresponding
    uncertainty.
 
-## 6. What this repo contains
+## 7. Modeling: predicting severity, and what a smartwatch can see
+
+After reproduction, the project branched into machine learning
+(`modeling_log.md` documents every step, including two negative results).
+
+**Target derivation.** Severity bands were assigned from the AASM-derived
+total AHI (§5): Normal <5, Mild 5–14, Moderate 15–29, Severe ≥30.
+The full cohort of 55 was used for modeling — the 13 thesis-excluded
+patients return, because a screening model's correct population is
+"everyone referred to the sleep lab," not a pre-filtered disease group.
+Their profile (7 normal / 2 mild / 1 moderate / 3 severe) makes the mixed
+cohort: 7 normal / 5 mild / 11 moderate / 32 severe.
+
+**Leakage control.** No AHI column (any construction) was available to the
+models: severity is *defined* by total AHI, so a model that sees AHI would
+re-derive its own label and report a fake score. Event *counts* were
+allowed — they are the ingredients, not the rate, so using them is genuine
+prediction.
+
+**Protocol.** Two feature sets × two targets × two models, 5-fold
+stratified cross-validation, **30 random seeds** per configuration (single
+splits proved unstable at this n: fold accuracies ranged up to 1.0 by
+seed). Majority-class baseline: 0.582.
+
+| Features | Target | Model | Accuracy (30 seeds) |
+|---|---|---|---|
+| Smartband-plausible | severe vs non-severe | random forest | **0.685 ± 0.134** |
+| Smartband-plausible | severe vs non-severe | logistic | 0.639 ± 0.133 |
+| Smartband-plausible | 4-class severity | random forest | 0.532 ± 0.121 |
+| Smartband-plausible | 4-class severity | logistic | 0.459 ± 0.131 |
+| Full PSG | severe vs non-severe | random forest | **0.937 ± 0.077** |
+| Full PSG | severe vs non-severe | logistic | 0.791 ± 0.119 |
+| Full PSG | 4-class severity | random forest | **0.778 ± 0.090** |
+| Full PSG | 4-class severity | logistic | 0.564 ± 0.121 |
+
+"Smartband-plausible" = only signals a consumer wearable can measure:
+body metrics, sleep timing/continuity/awakenings, SpO2, movement, and
+symptom questionnaires — no event counts, no stage AHI, no Mallampati.
+
+**Findings.**
+
+1. **Full PSG features predict severity well** (0.937 binary, 0.778
+   4-class, vs 0.582 baseline). The model sees event counts, not the rate
+   formula, so this is genuine signal.
+2. **Smartwatch-grade features detect severe OSA weakly but above
+   baseline** (0.685 vs 0.582) and cannot grade severity (4-class below
+   baseline). Their strongest signals: ODI and BMI.
+3. **The 25-point gap between feature sets is the quantified value of the
+   sleep lab's respiratory measurement** over everything a wearable can
+   see. Wearables see the consequences of OSA; the lab measures its cause.
+4. Two documented negative results along the way: on the pre-filtered
+   42-patient OSA cohort, smartwatch features added nothing (all models
+   below baseline — the cohort's severity skew left nothing to learn);
+   and prior-importance feature weighting by column replication hurt
+   rather than helped.
+5. Methodological note: at n = 55, single-seed evaluations were unstable
+   (fold accuracies up to 1.0); the multi-seed protocol is what makes the
+   numbers above quotable.
+
+## 8. What this repo contains
 
 | File | Purpose |
 |---|---|
@@ -132,13 +210,32 @@ Both are flagged as open items rather than resolved.
 | `stats_tests.py` | recomputed correlations and t-tests (Tables 8–13) |
 | `explore_table13.py` | the Table 13 forensic reconstruction |
 | `extract_spv.py`, `find_t789.py`, `match_output4.py` | SPSS `.spv` extraction tooling |
+| `build_model_table.py` | AHI derivation + severity bands → `data_model.csv` |
+| `train_severity_model.py` | smartwatch-feature modeling (current feature set) |
+| `final_evaluation.py` | final head-to-head: 8 configurations × 30 seeds → `final_results.csv` |
+| `modeling_log.md` | the complete modeling decision trail, incl. negative results |
 
 All data files are git-ignored; only code is version-controlled.
 
-## 7. Next steps
+## 9. Conclusions
 
-- Week 2: severity prediction from PSG features (scikit-learn), using the
-  same cleaned dataset.
-- A short write-up of §4 as a standalone reproducibility report, suitable
-  for a blog post or a letter to the original journal if the co-authors
-  wish.
+1. The thesis's descriptive statistics reproduce completely (99/99 checks)
+   from the raw dataset — the data foundation is sound.
+2. One published inferential claim (Table 13) does not survive re-analysis
+   with the appropriate paired test; the published t-value traces to a
+   one-sample test present in the archived SPSS output. The REM-vs-non-REM
+   direction remains descriptively real but is not significant at this
+   sample size.
+3. Total AHI is recoverable from event counts and validated two ways;
+   severity bands follow AASM cutoffs.
+4. In a mixed referral cohort, wearable-grade features detect severe OSA
+   above chance but cannot grade severity; the sleep lab's respiratory
+   measurement accounts for a quantified 25-point accuracy gap.
+
+## 10. Next steps
+
+- Continuous-target regression on total AHI (sidesteps band boundaries).
+- External validation on a public sleep dataset (SHHS/PhysioNet) — the
+  real test of the smartwatch screening framing.
+- A standalone short paper is possible from §4 (reproducibility audit) +
+  §7 (modeling), pending co-author discussions.
