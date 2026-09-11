@@ -2,6 +2,7 @@ data_raw.xlsx
 data_clean.csv
 data_included.csv
 data_model.csv
+final_results.csv
 *.pdf
 *.doc
 *.docx

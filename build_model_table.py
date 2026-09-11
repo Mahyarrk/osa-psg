@@ -1,10 +1,17 @@
 """
 build_model_table.py — build the modeling table for severity prediction.
 
-Loads the included cohort (n=42), computes total AHI from event counts and
-total sleep time, derives severity bands (AASM: Normal <5, Mild 5-14,
-Moderate 15-29, Severe >=30), drops identifier/free-text columns, saves
-data_model.csv.
+Loads the full cohort (n=55: 42 thesis-included + 13 excluded patients),
+computes true total AHI from event counts and total sleep time, derives
+severity bands (AASM: Normal <5, Mild 5-14, Moderate 15-29, Severe >=30),
+drops identifier/free-text columns, saves data_model.csv.
+
+Cohort note: the model table now includes the 13 thesis-excluded patients.
+The thesis excluded them for good clinical reasons (normals, upper-airway
+obstruction, narcolepsy, parasomnia...), but for a *screening* model the
+right population is "everyone referred to the sleep lab" — mixed, not
+pre-filtered. Their severity distribution (7 normal / 2 mild / 1 moderate
+/ 3 severe by ahi_true_total) confirms they land mostly outside severe.
 
 AHI derivation
 --------------
@@ -25,9 +32,16 @@ Cross-check: as a weighted average of the stage AHIs by stage-time shares
 the two routes agree. Correlation with ODI (0.578) is in the expected
 0.5-0.7 range for a correctly constructed AHI.
 
-The summed convention (ahi_rem + ahi_nonrem) is kept as ahi_total only to
-reproduce the thesis's published correlations (stats_tests.py); it is not
-used for severity.
+Naming caution — two different "total AHI"s exist:
+  ahi_true_total  the real AASM total (events / total sleep hours);
+                  this defines the severity target.
+  ahi_sum_stages  the thesis's apparent convention (ahi_rem + ahi_nonrem,
+                  two rates with different denominators added together).
+                  Kept ONLY to reproduce the thesis's published
+                  correlations in stats_tests.py; the thesis's exact
+                  formula is unrecoverable from archived outputs, and this
+                  quantity has no clinical meaning. Never use it for
+                  severity or any new analysis.
 
 Run:  uv run build_model_table.py
 """
@@ -52,10 +66,13 @@ NON_FEATURES = [
 
 def build_model_table() -> pd.DataFrame:
     inc = load_clean()
-    inc = inc[~inc["excluded"]].copy()
+    # Full cohort for the screening-model framing: thesis-included (42) +
+    # thesis-excluded (13). The excluded are mostly non-severe, which is
+    # exactly what a screening population needs.
+    inc = inc.copy()
 
-    # Thesis-convention total (summed stage rates) — reproduction only.
-    inc["ahi_total"] = inc["ahi_rem"] + inc["ahi_nonrem"]
+    # Reproduction column: thesis's summed stage rates. No clinical meaning.
+    inc["ahi_sum_stages"] = inc["ahi_rem"] + inc["ahi_nonrem"]
 
     # True total AHI: all respiratory events per hour of sleep (AASM).
     events = (

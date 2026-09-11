@@ -16,15 +16,15 @@ from scipy import stats
 from clean import load_clean
 
 inc = load_clean()
-inc = inc[~inc["excluded"]].assign(ahi_total=lambda d: d["ahi_rem"] + d["ahi_nonrem"])
+inc = inc[~inc["excluded"]].assign(ahi_sum_stages=lambda d: d["ahi_rem"] + d["ahi_nonrem"])
 heavy = inc[inc["bmi"] >= 30]  # n=21
 
 print(f"n = {len(heavy)}")
-print(f"AHI total: mean {heavy['ahi_total'].mean():.2f}  SD {heavy['ahi_total'].std():.2f}")
+print(f"AHI total: mean {heavy['ahi_sum_stages'].mean():.2f}  SD {heavy['ahi_sum_stages'].std():.2f}")
 print(f"AHI REM  : mean {heavy['ahi_rem'].mean():.2f}  SD {heavy['ahi_rem'].std():.2f}  (thesis 66.22+-43.66)")
 print(f"AHI nonREM: mean {heavy['ahi_nonrem'].mean():.2f}  (thesis 64.26+-37.29)")
 
-t = stats.ttest_1samp(heavy["ahi_total"], 7.5)
+t = stats.ttest_1samp(heavy["ahi_sum_stages"], 7.5)
 print(f"\none-sample t-test AHI total vs mu=7.5: t={t[0]:.2f}  p={t[1]:.6f}  <- thesis t=7.89")
 
 d = heavy["ahi_rem"] - heavy["ahi_nonrem"]
