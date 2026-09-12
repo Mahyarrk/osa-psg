@@ -178,9 +178,35 @@ seed). Majority-class baseline: 0.582.
 | Full PSG | 4-class severity | random forest | **0.778 ± 0.090** |
 | Full PSG | 4-class severity | logistic | 0.564 ± 0.121 |
 
-"Smartband-plausible" = only signals a consumer wearable can measure:
-body metrics, sleep timing/continuity/awakenings, SpO2, movement, and
-symptom questionnaires — no event counts, no stage AHI, no Mallampati.
+**The two feature sets.**
+
+- *Smartband-plausible (22 features):* only signals a consumer wearable
+  genuinely measures — body metrics (age, sex, height, weight, BMI),
+  sleep timing/continuity (total sleep time, latency, awakenings,
+  efficiency), oxygenation (mean SpO2 awake/REM/non-REM, ODI), movement
+  (arousal index, PLMS index), and symptom questionnaires. No event
+  counts, no stage-specific AHI, no Mallampati.
+- *Full PSG (36 features):* the smartband set **plus** the eight raw
+  respiratory event counts (obstructive/central/mixed apneas and
+  hypopneas, each split by REM/non-REM) and the hypnotic-use symptom —
+  but still **no** AHI columns, since those define the label (see
+  leakage control above), and no Mallampati (44/55 missing).
+
+**The wearability assumption, disclosed.** The smartband set assumes
+*perfect fidelity* of these signals: the model received PSG-grade SpO2
+and PSG-scored awakenings, while real devices (Apple Watch breathing-
+disturbance notifications, Galaxy Watch sleep apnea detection) sample
+SpO2 intermittently, infer sleep stages without EEG, and detect
+disturbances through proxy signals. Real-world wearable performance will
+therefore sit **below** our 0.685 — that figure is an optimistic ceiling.
+The full-PSG set, by contrast, includes typed, stage-localized event
+counts (obstructive/central/mixed × REM/non-REM) that no current wearable
+can produce; assuming a "fully accurate" consumer disturbance
+notification would not bridge this, because it would amount to handing
+the model the aggregate it is supposed to predict. The 25-point gap
+between the sets is thus the irreducible value of laboratory respiratory
+measurement — and this study's smartwatch framing extends only to the
+smartband set.
 
 **Findings.**
 

@@ -77,6 +77,22 @@ not distributed (git-ignored).
 | `report.md` | full writeup: methods, discrepancies, results |
 | `modeling_log.md` | every modeling decision, including negative results |
 
+## The two feature sets
+
+- **Smartband-plausible (22 features):** only signals a consumer wearable
+  genuinely measures — body metrics (age, sex, height, weight, BMI),
+  sleep timing/continuity (total sleep time, latency, awakenings,
+  efficiency), oxygenation (mean SpO2 awake/REM/non-REM, ODI), movement
+  (arousal index, PLMS index), and symptom questionnaires.
+- **Full PSG (36 features):** the smartband set **plus** the eight raw
+  respiratory event counts (obstructive/central/mixed apneas and
+  hypopneas, each split by REM/non-REM) and the hypnotic-use symptom —
+  but still no AHI columns (those define the label — target leakage) and
+  no Mallampati (44/55 missing).
+
+Both sets see the same 55 patients (the full referral cohort) and the
+same severity target, derived from the AASM-definition total AHI.
+
 ## Findings in brief
 
 1. **The thesis's descriptive statistics reproduce completely** — 99/99
@@ -91,6 +107,15 @@ not distributed (git-ignored).
    signals (0.685 binary) — and not gradable at all.** The gap measures
    what the sleep lab's respiratory measurement adds over everything a
    wearable can see.
+4. **Wearability assumption, disclosed:** the smartband set assumes
+   *perfect fidelity* of its signals — the model received PSG-grade SpO2
+   and PSG-scored awakenings, while real devices (Apple Watch breathing-
+   disturbance notifications, Galaxy Watch apnea detection) sample SpO2
+   intermittently and infer sleep stages without EEG. Real-world wearable
+   performance will therefore sit below 0.685; that figure is an
+   optimistic ceiling. The full-PSG set contains typed, stage-localized
+   event counts that no current wearable can produce, so the 25-point gap
+   is the irreducible value of laboratory respiratory measurement.
 
 ## Notes
 
