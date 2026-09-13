@@ -116,6 +116,24 @@ same severity target, derived from the AASM-definition total AHI.
    optimistic ceiling. The full-PSG set contains typed, stage-localized
    event counts that no current wearable can produce, so the 25-point gap
    is the irreducible value of laboratory respiratory measurement.
+5. **Binary screening trade-off (30-seed averages):** the smartband
+   forest reaches **75% sensitivity** (severe patients flagged) but only
+   **59% specificity** (non-severe cleared) — a triage profile: few missed
+   cases, many false alarms, positives sent to the lab regardless. The
+   full-PSG forest is near-diagnostic on both axes: **97% sensitivity /
+   89% specificity** (0.974 ± 0.029 / 0.886 ± 0.060). Full table in
+   `report.md` §7.
+
+**How the accuracy numbers are calculated.** For every random seed, the 55
+patients are split into 5 stratified folds; the model trains on 4 folds and
+predicts the held-out fifth, rotating until every patient has been
+predicted exactly once by a model that never saw them. Accuracy = correct
+predictions ÷ 55 for that seed. The reported value is the mean of 30 such
+seed-level accuracies, with the standard deviation across seeds as
+uncertainty. Sensitivity and specificity decompose the same predictions by
+true class. Imputation and scaling are fitted inside each fold's training
+data only — no patient ever contributes to the preprocessing of their own
+test prediction.
 
 ## Notes
 

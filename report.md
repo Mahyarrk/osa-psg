@@ -208,6 +208,43 @@ between the sets is thus the irreducible value of laboratory respiratory
 measurement — and this study's smartwatch framing extends only to the
 smartband set.
 
+**Binary-task sensitivity and specificity (30-seed distributions).**
+For the severe-vs-non-severe task, accuracy alone hides the clinical
+trade-off, so each seed's pooled predictions were also scored for
+sensitivity (severe patients correctly flagged) and specificity
+(non-severe patients correctly cleared). Averages over 30 seeds:
+
+| Features | Model | Accuracy | Sensitivity (severe) | Specificity (non-severe) |
+|---|---|---|---|---|
+| Smartband | logistic | 0.639 ± 0.046 | 0.683 ± 0.052 | 0.578 ± 0.074 |
+| Smartband | random forest | 0.685 ± 0.040 | 0.750 ± 0.058 | 0.594 ± 0.064 |
+| Full PSG | logistic | 0.791 ± 0.030 | 0.802 ± 0.046 | 0.775 ± 0.044 |
+| Full PSG | random forest | 0.937 ± 0.033 | 0.974 ± 0.029 | 0.886 ± 0.060 |
+
+(Here the ± is the standard deviation *across the 30 seed-level values* —
+smaller than the fold-to-fold spread quoted earlier, because each seed's
+value is already pooled over 55 out-of-fold predictions.)
+
+Read clinically: the smartband forest catches 75% of severe patients but
+clears only ~59% of non-severe ones — a triage profile: few missed cases,
+many false alarms, every positive going to the sleep lab anyway. The
+full-PSG forest (0.974 / 0.886) approaches diagnostic-grade performance
+on both axes. The `class_weight="balanced"` setting deliberately trades
+specificity for sensitivity in both models.
+
+**How the accuracy scores are calculated.** Every patient is predicted
+exactly once per seed by a model that never saw them during that fold's
+training: the 55 patients are split into 5 stratified folds; the model
+trains on 4 folds and predicts the held-out one; rotation assigns every
+patient to the holdout exactly once. Each patient's predicted class is
+compared to the truth derived from their total AHI; accuracy is the share
+of correct predictions (32+23 = 55 comparisons per seed). The reported
+number is the mean of 30 such accuracies (one per random fold split),
+with the standard deviation across seeds as the uncertainty. Sensitivity
+and specificity decompose the same confusion counts by true class.
+No patient is ever scored by a model that trained on them; imputation
+and scaling are fitted inside each fold's training data only.
+
 **Findings.**
 
 1. **Full PSG features predict severity well** (0.937 binary, 0.778
