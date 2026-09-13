@@ -123,6 +123,12 @@ same severity target, derived from the AASM-definition total AHI.
    full-PSG forest is near-diagnostic on both axes: **97% sensitivity /
    89% specificity** (0.974 ± 0.029 / 0.886 ± 0.060). Full table in
    `report.md` §7.
+6. **ROC-AUC (ranking quality, cutoff-free, 30 seeds):** smartband forest
+   **0.740 ± 0.037**, full-PSG forest **0.989 ± 0.009** (chance = 0.5).
+   The smartband model discriminates better than its accuracy suggests;
+   the full-PSG model's pair-ranking is near-perfect — threshold-
+   independent confirmation of the 0.937 accuracy. Full table in
+   `report.md` §7.
 
 **How the accuracy numbers are calculated.** For every random seed, the 55
 patients are split into 5 stratified folds; the model trains on 4 folds and

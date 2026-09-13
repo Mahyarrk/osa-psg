@@ -245,6 +245,28 @@ and specificity decompose the same confusion counts by true class.
 No patient is ever scored by a model that trained on them; imputation
 and scaling are fitted inside each fold's training data only.
 
+**ROC-AUC (30-seed distributions).** Accuracy and sens/spec describe the
+model at one decision cutoff; ROC-AUC measures the quality of the
+underlying *ranking*, independent of any cutoff. It answers: if one random
+severe and one random non-severe patient are picked, how often does the
+model assign the severe patient the higher severity probability? 0.5 =
+chance, 1.0 = perfect ordering.
+
+| Features | Model | ROC-AUC |
+|---|---|---|
+| Smartband | logistic | 0.669 ± 0.040 |
+| Smartband | random forest | **0.740 ± 0.037** |
+| Full PSG | logistic | 0.865 ± 0.031 |
+| Full PSG | random forest | **0.989 ± 0.009** |
+
+Two readings: the smartband forest's discrimination (0.740) is
+meaningfully better than its accuracy (0.685) suggests — the class
+weighting costs accuracy at the 0.5 cutoff, not ranking ability. And the
+full-PSG forest's 0.989 (SD 0.009 — the most stable number in this study)
+is near-perfect pair-ranking, threshold-independent confirmation of the
+0.937 accuracy. AUC is unaffected by class balance, which makes these
+four values directly comparable.
+
 **Findings.**
 
 1. **Full PSG features predict severity well** (0.937 binary, 0.778
